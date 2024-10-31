@@ -1,0 +1,11 @@
+__pycache__/
+wandb/
+results/
+checkpoint/
+jhgan/ko-sroberta-multitask/model.safetensors
+hard_negative_345711.json
+only_3_345711.json
+*.csv
+*.json
+*.pt
+*.log
