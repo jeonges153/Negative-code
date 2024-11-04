@@ -166,8 +166,8 @@ def main():
             
             print("############################ {} epoch best_accuracy ############################\n\n".format(E))
 
-        os.makedirs(os.path.join('./results', args.result_json), exist_ok=True)
-        json.dump(d, open(os.path.join('./results', args.result_json), "w"), indent=2) # 결과 저장파일
+        # os.makedirs(os.path.join('./results', args.result_json), exist_ok=True)
+        json.dump(d, open('/content/drive/MyDrive/contrastive_learning /results/proposed_layer2_result.json', "w"), indent=2) # 결과 저장파일
             
 if __name__ == '__main__':
     main()
