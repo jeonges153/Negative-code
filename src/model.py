@@ -6,7 +6,7 @@ from torch import nn
 from torch import einsum
 import torch.nn.functional as F
 
-from embedding import EmbeddingModel
+# from embedding import EmbeddingModel
 from transformers import AutoTokenizer, AutoModel
 from sentence_transformers import SentenceTransformer
 
@@ -19,7 +19,7 @@ class ContrastiveModel(nn.Module):
         super(ContrastiveModel, self).__init__()
         self.tokenizer = AutoTokenizer.from_pretrained("jhgan/ko-sroberta-multitask")
         self.model_ =  AutoModel.from_pretrained("jhgan/ko-sroberta-multitask")
-
+        
         '''
         print("\n--- Transformer Module Details ---")
         transformer = self.model_[0].auto_model
@@ -34,34 +34,18 @@ class ContrastiveModel(nn.Module):
         print(f"Pooling Mode Max Tokens: {pooling.pooling_mode_max_tokens}")
         print(f"Word Embedding Dimension: {pooling.word_embedding_dimension}")
         '''
-
-        self.model = EmbeddingModel().load()
-        for p in self.model.parameters(): #### backpropagation을 위함 ####
-            p.requires_grad=True
-        self.dim = self.model[1].word_embedding_dimension
-        self.linearlayer = nn.Linear(self.dim, self.dim)
-        self.activation = nn.ReLU() 
+        # for p in self.model.parameters(): #### backpropagation을 위함 ####
+        #     p.requires_grad=True
+        self.dim = self.model_.embeddings.word_embeddings.embedding_dim
+        # self.linearlayer = nn.Linear(self.dim, self.dim)
+        # self.activation = nn.ReLU() 
         self.classifier = nn.Linear(self.dim, num_class)
         
         self.tau = 0.1
         self.similarity_fct = nn.CosineSimilarity(dim=-1)
     
-    # def testing(self, idx, text, label):
-    #     embeddings = self.model.model.encode(text)
-        
-    #     label = torch.tensor(label) 
-    #     embedding = embedding.squeeze(0)
-    #     # [1, 8, 1024] -> [8, 1024]
-        
-    #     out = self.linearlayer(embedding)
-    #     out = self.activation(out)
-    #     classification_out = self.classifier(out)
-    #     return classification_out, label
-    
-    
     def forward(self, idx, text, label):
         text = [t[0] if isinstance(t, tuple) else t for t in text]
-        
         tok = self.tokenizer(
             text,
             return_tensors='pt',
@@ -73,9 +57,9 @@ class ContrastiveModel(nn.Module):
             tok['input_ids'],
             attention_mask=tok['attention_mask']
         )
-        embedding = embeds.pooler_output
-        # embedding = torch.tensor(self.model.encode(text)) # torch.Size([8, 768])
+        embedding = embeds.pooler_output # torch.Size([8, 768]) 
         label = torch.tensor(label) # torch.Size([8])
+        
         
         # contrastive learning
         # embedding = F.normalize(embedding, p=2, dim=1)
@@ -106,19 +90,19 @@ class ContrastiveModel(nn.Module):
         log_prob = torch.log(exp_pos_scores / total_scores_sum)
         contrastive_loss = -log_prob.mean()
         
-        out = self.linearlayer(embedding)
-        out = self.activation(out)
-        classification_out = self.classifier(out)
+        # out = self.linearlayer(embedding)
+        # out = self.activation(out)
+        classification_out = self.classifier(embedding)
         return classification_out, contrastive_loss, label
     
 
 class ClassificationModel(nn.Module): 
     def __init__(self):
         super(ClassificationModel, self).__init__()
-        self.model = EmbeddingModel().load()
+        # self.model = EmbeddingModel().load()
         # print(self.model[0]) # Transformer({'max_seq_length': 128, 'do_lower_case': False}) with Transformer model: XLMRobertaModel
         # print(self.model[0]._modules) # XLMRobertaEmbeddings, XLMRobertaEncoder, XLMRobertaPooler
-        dim = self.model[1].word_embedding_dimension
+        dim = self.model_.embeddings.word_embeddings.embedding_dim
         self.classifier = nn.Linear(dim, 5) # 1024, 8
         
         

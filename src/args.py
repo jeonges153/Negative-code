@@ -13,8 +13,10 @@ def parse_args():
         help='Directory where the dataset will be stored.')
     parser.add_argument(
         '--inference_data', '-id', type=str, default='./345711_inference.csv',
-        help='Directory where the inference dataset will be stored.'
-    )
+        help='Directory where the inference dataset will be stored.')
+    parser.add_argument(
+        '--result_json', '--rj', type=str, default='proposed_layer2_result.json',
+        help='Result json file')
     parser.add_argument(
         '--dir_out', '-do', type=str, default='out',
         help='Directory where the output will be stored.')

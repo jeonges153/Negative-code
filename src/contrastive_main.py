@@ -116,16 +116,16 @@ def main():
         
         print("This is validation step ··· ")
         check_requires_grad(model)
-        quit()
         
         with torch.no_grad(): 
             model.eval()
             for data in tqdm(eval_dataloader):
-                idx = data[0] 
-                label  = data[1] 
-                embedding = data[2] 
                 
-                classification_out, contrastive_loss, label = model(idx, label, embedding) 
+                idx = data[0]
+                text = data[1]
+                label = data[2] 
+                
+                classification_out, contrastive_loss, label = model(idx, text, label) 
                 
                 classification_loss = criterion(classification_out, label)
                 pred = torch.argmax(classification_out, dim=1)
@@ -166,8 +166,8 @@ def main():
             
             print("############################ {} epoch best_accuracy ############################\n\n".format(E))
 
-        
-        json.dump(d, open(os.path.join('./results', "proposed_layer2_result.json"), "w"), indent=2) # 결과 저장파일
+        os.makedirs(os.path.join('./results', args.result_json), exist_ok=True)
+        json.dump(d, open(os.path.join('./results', args.result_json), "w"), indent=2) # 결과 저장파일
             
 if __name__ == '__main__':
     main()
